@@ -18,12 +18,13 @@ package org.apache.camel.component.threescale.authrep;
 
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
-import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.spi.UriPath;
 
 import threescale.v3.api.ServiceApi;
 import threescale.v3.api.impl.ServiceApiDriver;
@@ -33,13 +34,10 @@ public class AuthRepEndpoint extends DefaultEndpoint {
 
 	private ServiceApi threeScaleClient;
 
-	/*
-	 * @UriPath(description = "3scale Name")
-	 * 
-	 * @Metadata(required = "true") private String threeScaleName;
-	 */
-
-	@UriParam
+	@UriPath(description = "3scale Name") @Metadata(required = "true") 
+	private String threescaleName;
+	
+	@UriParam(description = "3scale Configuration")
 	protected AuthRepConfiguration conf;
 
 	public AuthRepEndpoint(String uri, Component component, AuthRepConfiguration configuration) {
