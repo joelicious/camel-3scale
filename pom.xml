@@ -20,26 +20,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.apache.camel</groupId>
-    <artifactId>components</artifactId>
-    <version>2.17.0</version>
-  </parent>
-
+  <groupId>org.apache.camel</groupId>
   <artifactId>camel-3scale</artifactId>
+  <version>2.21.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   
   <name>Camel :: 3scale</name>
   <description>Camel 3scale Component</description>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   	<version.3scale.api>3.0.4</version.3scale.api>
-    <camel.osgi.export.pkg>org.apache.camel.component.threescale.*</camel.osgi.export.pkg>
-    <camel.osgi.export.service>
-      org.apache.camel.spi.ComponentResolver;component=3scale-authrep,
-      org.apache.camel.spi.ComponentResolver;component=3scale-report
-    </camel.osgi.export.service>
+  	<version.camel>2.20.0</version.camel>
   </properties>
+  
+  <dependencyManagement>
+    <dependencies>
+      <!-- Camel BOM -->
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-parent</artifactId>
+        <version>${version.camel}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -50,6 +57,29 @@
       <groupId>net.3scale</groupId>
       <artifactId>3scale-api</artifactId>
       <version>${version.3scale.api}</version>
+    </dependency>
+    
+    <!-- support camel documentation -->
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>apt</artifactId>
+    </dependency>
+
+    <!-- logging -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- testing -->
@@ -65,5 +95,50 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  
+   <build>
+   
+   	  <plugins>
+      
+      <!-- generate components meta-data and validate component includes documentation etc -->
+      <plugin>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-package-maven-plugin</artifactId>
+        <version>2.20.0</version>
+        <executions>
+          <execution>
+            <id>prepare</id>
+            <goals>
+              <goal>prepare-components</goal>
+            </goals>
+            <phase>generate-resources</phase>
+          </execution>
+          <execution>
+            <id>validate</id>
+            <goals>
+              <goal>validate-components</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- to generate the MANIFEST-FILE of the bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.3.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.apache.component.camel-threescale</Bundle-SymbolicName>
+            <Export-Service>org.apache.camel.spi.ComponentResolver;component=threescale</Export-Service>
+          </instructions>
+        </configuration>
+      </plugin>
+
+    </plugins>
+    
+   </build>
 
 </project>

@@ -28,22 +28,33 @@ import threescale.v3.api.ParameterMap;
 import threescale.v3.api.ServerError;
 
 public class AuthRepProducer extends DefaultProducer {
-	
-    private static final Logger LOG = LoggerFactory.getLogger(AuthRepProducer.class);
+
+	private static final Logger LOG = LoggerFactory.getLogger(AuthRepProducer.class);
 
 	private transient String authRepProducerToString;
 
 	public AuthRepProducer(Endpoint endpoint) {
 		super(endpoint);
-		System.out.println("Constructor");
 	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		System.out.println("Before Process");
 
-		ParameterMap params = new ParameterMap();
-		params.add("user_key", getConfiguration().getUserKey());
+		ParameterMap params;
+		String serviceToken = null;
+		String serviceId = null;
+
+		// If no parameter map is defined, then use URI parameters
+		if (null == getConfiguration().getParameterMap()) {
+			params = new ParameterMap();
+			params.add("user_key", getConfiguration().getUserKey());
+			serviceToken = getConfiguration().getServiceToken();
+			serviceId = getConfiguration().getServiceId();
+		} else {
+			params = getConfiguration().getParameterMap();
+			serviceToken = getConfiguration().getParameterMap().getStringValue("service_token");
+			serviceId = getConfiguration().getParameterMap().getStringValue("service_id");
+		}
 
 		ParameterMap usage = new ParameterMap();
 		usage.add("hits", "1");
@@ -53,32 +64,24 @@ public class AuthRepProducer extends DefaultProducer {
 
 		try {
 
-			System.out.println("Service Token: " + getConfiguration().getServiceToken() + " Service Id: "
-					+ getConfiguration().getServiceId());
-
-			LOG.trace("Sending request");
-			
-			response = getEndpoint().getServiceApi().authrep(getConfiguration().getServiceToken(),
-					getConfiguration().getServiceId(), params);
-			
-			LOG.trace("Got Response");
-
-			System.out.println("AuthRep on App Id Success: " + response.success());
+			response = getEndpoint().getServiceApi().authrep(serviceToken, serviceId, params);
 
 			if (response.success() == true) {
 
-				System.out.println("Plan: " + response.getPlan());
+				exchange.getIn().setHeader("THREESCALE_AUTH", "VALID");
+				LOG.info("Plan: " + response.getPlan());
 
 			} else {
-				System.out.println("Error: " + response.getErrorCode());
-				System.out.println("Reason: " + response.getReason());
+				
+				exchange.getIn().setHeader("THREESCALE_AUTH", "INVALID");
+				
+				LOG.error("Error: " + response.getErrorCode());
+				LOG.error("Reason: " + response.getReason());
 			}
 
 		} catch (ServerError serverError) {
 			serverError.printStackTrace();
 		}
-
-		System.out.println("Finished");
 
 	}
 

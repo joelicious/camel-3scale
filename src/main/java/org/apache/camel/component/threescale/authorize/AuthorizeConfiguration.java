@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.threescale.report;
+package org.apache.camel.component.threescale.authorize;
 
 import org.apache.camel.spi.UriParam;
 
 import threescale.v3.api.ParameterMap;
 import threescale.v3.api.ServiceApi;
 
-public class ReportConfiguration {
+public class AuthorizeConfiguration {
 
-	@UriParam(description = "Server Host")
+	@UriParam
 	private String serverHost;
-	@UriParam(description = "Server Port")
+	@UriParam
 	private int serverPort;
-	@UriParam(description = "ServiceAPI")
+	@UriParam
 	private ServiceApi serviceApi;
-	@UriParam(description = "User Key")
+	@UriParam
 	private String userKey;
-	@UriParam(description = "Serivce Token")
+	@UriParam
 	private String serviceToken;
-	@UriParam(description = "Service Id")
+	@UriParam
 	private String serviceId;
-	@UriParam(description = "Parameter Map")
+	@UriParam
 	private ParameterMap parameterMap;
 
 	/**

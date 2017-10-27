@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.threescale.report;
+package org.apache.camel.component.threescale.authorize;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -25,16 +25,15 @@ import org.slf4j.LoggerFactory;
 
 import threescale.v3.api.AuthorizeResponse;
 import threescale.v3.api.ParameterMap;
-import threescale.v3.api.ReportResponse;
 import threescale.v3.api.ServerError;
 
-public class ReportProducer extends DefaultProducer {
+public class AuthorizeProducer extends DefaultProducer {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ReportProducer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AuthorizeProducer.class);
 
-	private transient String reportProducerToString;
+	private transient String authorizeProducerToString;
 
-	public ReportProducer(Endpoint endpoint) {
+	public AuthorizeProducer(Endpoint endpoint) {
 		super(endpoint);
 	}
 
@@ -57,27 +56,22 @@ public class ReportProducer extends DefaultProducer {
 			serviceId = getConfiguration().getParameterMap().getStringValue("service_id");
 		}
 
-		ParameterMap usage = new ParameterMap();
-		usage.add("hits", "1");
-		params.add("usage", usage);
-
-		ReportResponse response = null;
+		AuthorizeResponse response = null;
 
 		try {
 
-			response = getEndpoint().getServiceApi().report(serviceToken, serviceId, params);
+			response = getEndpoint().getServiceApi().authorize(serviceToken, serviceId, params);
 
 			if (response.success() == true) {
 
 				exchange.getIn().setHeader("THREESCALE_AUTH", "VALID");
-				LOG.info("Plan: " + response.toString());
+				LOG.info("Plan: " + response.getPlan());
 
 			} else {
-
+				
 				exchange.getIn().setHeader("THREESCALE_AUTH", "INVALID");
-
-				LOG.error("Error Code: " + response.getErrorCode());
-				LOG.error("Error Message: " + response.getErrorMessage());
+				LOG.error("Error: " + response.getErrorCode());
+				LOG.error("Reason: " + response.getReason());
 			}
 
 		} catch (ServerError serverError) {
@@ -86,20 +80,21 @@ public class ReportProducer extends DefaultProducer {
 
 	}
 
-	protected ReportConfiguration getConfiguration() {
+	protected AuthorizeConfiguration getConfiguration() {
 		return getEndpoint().getConfiguration();
 	}
 
 	@Override
 	public String toString() {
-		if (reportProducerToString == null) {
-			reportProducerToString = "ReportProducer[" + URISupport.sanitizeUri(getEndpoint().getEndpointUri()) + "]";
+		if (authorizeProducerToString == null) {
+			authorizeProducerToString = "AuthRepProducer[" + URISupport.sanitizeUri(getEndpoint().getEndpointUri()) + "]";
 		}
-		return reportProducerToString;
+		return authorizeProducerToString;
 	}
 
 	@Override
-	public ReportEndpoint getEndpoint() {
-		return (ReportEndpoint) super.getEndpoint();
+	public AuthorizeEndpoint getEndpoint() {
+		return (AuthorizeEndpoint) super.getEndpoint();
 	}
+
 }

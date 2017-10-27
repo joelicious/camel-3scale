@@ -18,6 +18,7 @@ package org.apache.camel.component.threescale.authrep;
 
 import org.apache.camel.spi.UriParam;
 
+import threescale.v3.api.ParameterMap;
 import threescale.v3.api.ServiceApi;
 
 public class AuthRepConfiguration {
@@ -34,6 +35,8 @@ public class AuthRepConfiguration {
 	private String serviceToken;
 	@UriParam
 	private String serviceId;
+	@UriParam
+	private ParameterMap parameterMap;
 
 	/**
 	 * Get 3scale Service API
@@ -95,4 +98,11 @@ public class AuthRepConfiguration {
 		return serviceId;
 	}
 
+	public void setParameterMap(ParameterMap parameterMap) {
+		this.parameterMap = parameterMap;
+	}
+
+	public ParameterMap getParameterMap() {
+		return parameterMap;
+	}
 }

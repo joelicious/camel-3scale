@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.threescale.authrep;
+package org.apache.camel.component.threescale.authorize;
 
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
@@ -29,19 +29,18 @@ import org.apache.camel.spi.UriPath;
 import threescale.v3.api.ServiceApi;
 import threescale.v3.api.impl.ServiceApiDriver;
 
-@UriEndpoint(scheme = "threescale-authrep", title = "3scale Authorize and Report Service", syntax = "threescale-authrep:threescaleName", producerOnly = true, label = "authrep")
-public class AuthRepEndpoint extends DefaultEndpoint {
+@UriEndpoint(scheme = "threescale-authorize", title = "3scale Authorize Service", syntax = "threescale-authorize:threescaleName", producerOnly = true, label = "authorize")
+public class AuthorizeEndpoint extends DefaultEndpoint {
 
 	private ServiceApi serviceApi;
 
-	@UriPath(description = "3scale Name")
-	@Metadata(required = "true")
-	private String threeScaleName;
-
+	@UriPath(description = "3scale Name") @Metadata(required = "true") 
+	private String threescaleName;
+	
 	@UriParam(description = "3scale Configuration")
-	protected AuthRepConfiguration conf;
+	protected AuthorizeConfiguration conf;
 
-	public AuthRepEndpoint(String uri, Component component, AuthRepConfiguration configuration) {
+	public AuthorizeEndpoint(String uri, Component component, AuthorizeConfiguration configuration) {
 		super(uri, component);
 		this.conf = configuration;
 	}
@@ -63,17 +62,17 @@ public class AuthRepEndpoint extends DefaultEndpoint {
 	}
 
 	public Producer createProducer() throws Exception {
-		return new AuthRepProducer(this);
+		return new AuthorizeProducer(this);
 	}
 
 	public boolean isSingleton() {
 		return true;
 	}
 
-	public AuthRepConfiguration getConfiguration() {
+	public AuthorizeConfiguration getConfiguration() {
 		return conf;
 	}
-	
+
 	public ServiceApi getServiceApi() {
 		return serviceApi;
 	}

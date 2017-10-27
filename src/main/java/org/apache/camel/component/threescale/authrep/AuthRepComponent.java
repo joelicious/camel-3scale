@@ -39,8 +39,6 @@ public class AuthRepComponent extends UriEndpointComponent {
 		if (remaining == null || remaining.trim().length() == 0) {
 			throw new IllegalArgumentException("From must be specified.");
 		}
-		
-		System.out.println("Creating Endpoint");
 
 		return new AuthRepEndpoint(uri, this, configuration);
 	}

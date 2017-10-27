@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.component.threescale.report;
+package org.apache.camel.component.threescale.authorize;
 
 import java.util.Map;
 
@@ -22,24 +22,26 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 
-public class ReportComponent extends UriEndpointComponent {
+public class AuthorizeComponent extends UriEndpointComponent {
 
-	public ReportComponent() {
-		super(ReportEndpoint.class);
+	public AuthorizeComponent() {
+		super(AuthorizeEndpoint.class);
 	}
 
-	public ReportComponent(CamelContext context) {
-		super(context, ReportEndpoint.class);
+	public AuthorizeComponent(CamelContext context) {
+		super(context, AuthorizeEndpoint.class);
 	}
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		ReportConfiguration configuration = new ReportConfiguration();
+		AuthorizeConfiguration configuration = new AuthorizeConfiguration();
 		setProperties(configuration, parameters);
 
 		if (remaining == null || remaining.trim().length() == 0) {
 			throw new IllegalArgumentException("From must be specified.");
 		}
 
-		return new ReportEndpoint(uri, this, configuration);
+		System.out.println("Creating Endpoint");
+
+		return new AuthorizeEndpoint(uri, this, configuration);
 	}
 }
