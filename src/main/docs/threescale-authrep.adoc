@@ -1,5 +1,0 @@
-== threescale AuthRep Component
-
-*Available as of Camel Version 2.20*
-
-The AuthRep component .. 

@@ -1,0 +1,260 @@
+[[ThreeScale-ThreeScaleComponent]]
+
+3scale Component
+~~~~~~~~~~~~~~~~
+
+*Available as of Camel 2.x*
+
+The *threeScale* component in Camel that focuses on the Service Management API of the 
+https://www.redhat.com/en/technologies/jboss-middleware/3scale [Red Hat 3scale API Management Platform].
+
+The Service Management API allows for 3 operations:
+* Authorize : Read-only operation to authorize an application.
+* AuthRep : A 'one-shot' operation to authorize an application and report the associated transaction
+at the same time.
+* Report : Reports traffic for an application; typically used in OAuth where two calls are required:
+first authorize then report.
+
+This camel component allows authentication and reporting support to be applied to different
+segments of a camel route.
+
+3scale Auth and AuthRep are applied on a route using a Camel Policy. A Policy in Camel utilizes
+a strategy pattern for applying interceptors on Camel Processors. It offers the ability to apply
+cross-cutting concerns (for example: security, transactions, etc.) on sections/segments of a
+camel route.
+
+3scale Report are invoked as a Camel Endpoint.
+
+Maven users will need to add the folling dependency to their `pom.xml` for this component:
+
+[source,xml]
+----------------------------------------------------------
+<dependency>
+	<groupId>org.apache.camel</groupId>
+	<artifactId>camel-3scale</artifactId>
+	<version>x.x.x</version>
+	<!-- use the same version as your Camel core version -->
+</dependency>
+----------------------------------------------------------
+
+[[ThreeScale-ThreeScaleBasics]]
+3scale Basics
+^^^^^^^^^^^^^
+
+To employ the 3scale security on a camel route, a 3scale Policy object must be instantiated
+with security configuration details (including APIKey / APP ID + Token / OAuth, etc.). This
+object must then be applied to a camel route. This object may also be registered in the 
+Camel registry (JNDI or ApplicationContextRegistry) and then utilized on other routes in 
+the Camel Context.
+
+Configuration details are provided to the Policy using a ThreeScaleConfiguration object or
+via Camel Headers.
+
+There are two Policies offered :
+
+ThreeScaleAuthPolicy : This policy is only for Authorization for a 3scale API.
+
+ThreeScaleAuthRepPolicy : This policy is for the Authorization and Reporting of a 
+transaction for a 3scale API.
+
+[[ThreeScale-ApplyingAuthorizationonaCamelRoute]]
+Applying Authorization on a Camel Route
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ThreeScaleAuthPolicy tests and permits incoming message exchanges containing the 
+appropriate credentials in the Message Header to proceed further following proper 
+authentication.
+
+[source,java]
+---------------------------------------------------------------------------------------
+	protected RouteBuilder createRouteBuilder() throws Exception {
+	
+		final ThreeScaleAuthPolicy threeScalePolicy = 
+			new ThreeScaleAuthPolicy("ip.address", port, null);
+			
+		return new RouteBuilder() {
+			public void configure() {
+			
+				onException(CamelAuthorizationException.class)
+					.to("mock:authorizationException");
+
+				from("direct:threeScaleNoCache")
+					.policy(threeScalePolicy)
+					.log("log:incoming payload")
+					.to("mock:success");
+			}
+		};
+	}
+---------------------------------------------------------------------------------------
+
+If a JCache CachingProvider is supplied, then the AuthRep first checks the Cache to
+see if the credentials have already been authorized.  If already authorized, then
+no call to 3scale is invoked as the decision is based solely on the Cache.
+
+[source,java]
+---------------------------------------------------------------------------------------
+	protected RouteBuilder createRouteBuilder() throws Exception {
+	
+		final CachingProvider cachingProvider = Caching
+			.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider");
+		final ThreeScaleAuthPolicy threeScalePolicy = 
+			new ThreeScaleAuthPolicy("ip.address", port, cachingProvider);
+			
+		return new RouteBuilder() {
+			public void configure() {
+			
+				onException(CamelAuthorizationException.class)
+					.to("mock:authorizationException");
+
+				from("direct:threeScaleCache")
+					.policy(threeScaleAuthRepPolicy)
+					.log("log:incoming payload")
+					.to("mock:success");
+			}
+		};
+	}
+
+
+---------------------------------------------------------------------------------------
+
+[[ThreeScale-ApplyingAuthReponaCamelRoute]]
+Applying AuthRep on a Camel Route
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ThreeScaleAuthRepPolicy tests and permits incoming message exchange containing the
+appropriate credentials in the Message Header to proceed further following proper
+authentication. In addition, the transaction metrics is reported to the 3scale API.
+
+[source,java]
+---------------------------------------------------------------------------------------
+	protected RouteBuilder createRouteBuilder() throws Exception {
+	
+		final ThreeScaleAuthRepPolicy threeScaleAuthRepPolicy = 
+			new ThreeScaleAuthRepPolicy("ip.address", port, null);
+			
+		return new RouteBuilder() {
+			public void configure() {
+			
+				onException(CamelAuthorizationException.class)
+					.to("mock:authorizationException");
+
+				from("direct:threeScaleNoCache")
+					.policy(threeScaleAuthRepPolicy)
+					.log("log:incoming payload")
+					.to("mock:success");
+			}
+		};
+	}
+---------------------------------------------------------------------------------------
+
+If a JCache CachingProvider is supplied, then the AuthRep first checks the Cache to
+see if the credentials have already been authorized.  If already authorized, then
+no call to 3scale is invoked as the decision is based solely on the Cache.  It is
+upto the camel route to report metrics.
+
+[source,java]
+---------------------------------------------------------------------------------------
+	protected RouteBuilder createRouteBuilder() throws Exception {
+	
+		final CachingProvider cachingProvider = Caching
+			.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider");
+		final ThreeScaleAuthRepPolicy threeScaleAuthRepPolicy = 
+			new ThreeScaleAuthRepPolicy("ip.address", port, cachingProvider);
+			
+		return new RouteBuilder() {
+			public void configure() {
+			
+				onException(CamelAuthorizationException.class)
+					.to("mock:authorizationException");
+
+				from("direct:threeScaleCache")
+					.policy(threeScaleAuthRepPolicy)
+					.log("log:incoming payload")
+					.to("mock:success");
+			}
+		};
+	}
+---------------------------------------------------------------------------------------
+
+[[ThreeScale-ApplyingAuthRepOnaCamelRouteAndAsyncRep]]
+Applying AuthRep on a Camel Route and Asynchronously Report Metrics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this example, the route is still governed by the ThreeScaleAuthRepPolicy and
+the JCache, but when the Cache is used for authentication a Header then an
+asynchronous Camel Route is executed to Report Metrics.
+
+This allows for the most efficient means of executing the route, as the 
+cache is used to determine authorization.  Asynchronously, the Cache is
+updated with the latest authorization state.
+
+
+[source,java]
+---------------------------------------------------------------------------------------
+	protected RouteBuilder createRouteBuilder() throws Exception {
+	
+		final CachingProvider cachingProvider = Caching
+			.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider");
+		final ThreeScaleAuthRepPolicy threeScaleAuthRepPolicy = 
+			new ThreeScaleAuthRepPolicy("ip.address", port, cachingProvider);
+			
+		return new RouteBuilder() {
+			public void configure() {
+			
+				onException(CamelAuthorizationException.class)
+					.to("mock:authorizationException");
+
+				from("direct:threeScale")
+					.policy(threeScaleAuthRepPolicy)
+					.choice()
+						.when(header(ThreeScaleConstants.THREE_SCALE_CACHE_USED).isEqualTo(Boolean.TRUE))
+							.log("log:3scale Cache Used")
+							.to("seda:asyncInvoke3scale")
+						.otherwise()
+							.log("log:3Scale Invoked");
+				
+				from("seda:asyncInvoke3scale")
+					.to("threescale-report:saasAdmin?serverHost=ip.address&serverPort=port");
+					
+			}
+		};
+	}
+
+---------------------------------------------------------------------------------------
+
+[[ThreeScale-SendingMessagestoRoutesSecuredByAThreeScalePolicy]]
+Sending Messages to Camel Routes secured by a ThreeScalePolicy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Messages and Messages Exchanges sent along the camel route where the security
+policy is applied need to be accompanied by a Exchange Headers.
+
+Given below is an example of how a request may by sent using a ProducerTemplate
+in Camel along with the appropriate Headers.
+
+[source,java]
+---------------------------------------------------------------------------------------
+
+	@Test
+	public void testThreeScaleAuthorization() throws Exception {
+		
+		successEndpoint.expectedMessageCount(1);
+		failureEndpoint.expectedMessageCount(0);
+		
+		Map<String, Object> headerMap = new HashMap<String, Object>();
+		headerMap.put(ThreeScaleConstants.THREE_SCALE_SERVICE_ID, SERVICE_ID);
+		headerMap.put(ThreeScaleConstants.THREE_SCALE_SERVICE_TOKEN, SERVICE_TOKEN);
+		headerMap.put(ThreeScaleConstants.THREE_SCALE_API_KEY, API_KEY);
+		
+		template.sendBodyAndHeaders("direct:threeScaleAuthorization", "Body", headerMap);
+		
+		successEndpoint.assertIsSatisfied();
+		failureEndpoint.assertIsSatisfied();	
+		
+	}
+
+---------------------------------------------------------------------------------------
+
+
+
+

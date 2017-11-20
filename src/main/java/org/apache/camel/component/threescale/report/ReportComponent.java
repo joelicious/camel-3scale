@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
+import org.apache.camel.component.threescale.ThreeScaleConfiguration;
 import org.apache.camel.impl.UriEndpointComponent;
 
 public class ReportComponent extends UriEndpointComponent {
@@ -33,7 +34,7 @@ public class ReportComponent extends UriEndpointComponent {
 	}
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		ReportConfiguration configuration = new ReportConfiguration();
+		ThreeScaleConfiguration configuration = new ThreeScaleConfiguration();
 		setProperties(configuration, parameters);
 
 		if (remaining == null || remaining.trim().length() == 0) {

@@ -1,5 +1,0 @@
-== threescale Report Component
-
-*Available as of Camel Version 2.20*
-
-The Report component .. 
