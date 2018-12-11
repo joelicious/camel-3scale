@@ -97,12 +97,12 @@ public class ThreeScaleAuthProcessor extends ThreeScaleBaseProcessor {
 				}
 
 				// Ensure API Key -OR- App Id + App Key Pair is supplied
-				if ((null == exchangeConfiguration.getApiKey()) && (keySet.contains("user_key"))) {
+				if ((null == exchangeConfiguration.getApiKey()) && (!keySet.contains("user_key"))) {
 					apiKey = false;
 				}
 
-				if ((null == exchangeConfiguration.getAppId()) && (keySet.contains(("app_id")))
-						&& (null == exchangeConfiguration.getAppKey()) && (keySet.contains(("app_key")))) {
+				if ((null == exchangeConfiguration.getAppId()) && (!keySet.contains(("app_id")))
+						&& (null == exchangeConfiguration.getAppKey()) && (!keySet.contains(("app_key")))) {
 					appIdToken = false;
 				}
 

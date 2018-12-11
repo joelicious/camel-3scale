@@ -15,7 +15,7 @@
 
 	<groupId>org.apache.camel</groupId>
 	<artifactId>camel-3scale</artifactId>
-	<version>2.21.0-SNAPSHOT</version>
+	<version>2.22.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Camel :: 3scale</name>
@@ -25,7 +25,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<version.3scale.api>3.0.4</version.3scale.api>
-		<version.camel>2.20.0</version.camel>
+		<version.camel>2.22.0-SNAPSHOT</version.camel>
 
 		<jcache-bundle-version>1.0.0_1</jcache-bundle-version>
 		<hazelcast-version>3.9</hazelcast-version>
@@ -97,6 +97,11 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+      		<groupId>org.apache.camel</groupId>
+      		<artifactId>camel-jackson</artifactId>
+      		<scope>test</scope>
+    	</dependency>
 	</dependencies>
 
 	<build>
@@ -144,5 +149,30 @@
 		</plugins>
 
 	</build>
+	
+	  <profiles>
+    <profile>
+      <id>integration</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

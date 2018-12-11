@@ -16,57 +16,42 @@
  */
 package org.apache.camel.component.threescale;
 
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.spi.Metadata;
+import org.apache.camel.spi.UriParam;
+import org.apache.camel.spi.UriParams;
+
 import threescale.v3.api.ParameterMap;
 import threescale.v3.api.ServiceApi;
 
-public class ThreeScaleConfiguration {
-
-	/***
-	 * The host of the 3scale Admin Portal
-	 */
+@UriParams
+public class ThreeScaleConfiguration implements Cloneable {
+	
+	@UriParam(defaultValue = "localhost") @Metadata(required = "true")
 	private String serverHost;
 
-	/***
-	 * The port of the 3scale Admin Portal
-	 */
+	@UriParam(defaultValue = "8080") @Metadata(required = "true")
 	private int serverPort;
 
-	/***
-	 * The service identifier.
-	 */
+	@UriParam
 	private String serviceId;
-
-	/***
-	 * The service token
-	 */
+	
+	@UriParam
 	private String serviceToken;
-
-	/***
-	 * The API Key is the simplest form of credentials. By default, the name of
-	 * the key parameter is user_key.
-	 */
+	
+	@UriParam
 	private String apiKey;
-
-	/***
-	 * The App ID represents the Application Identifier. It is paired with the
-	 * AppKey for Authentication.
-	 */
+	
+	@UriParam
 	private String appId;
-
-	/***
-	 * The AppKey represents the Application Key. It is paired with the App ID
-	 * for Authentication.
-	 */
+	
+	@UriParam
 	private String appKey;
-
-	/***
-	 * The 3scale Service API.
-	 */
+	
+	@UriParam
 	private ServiceApi serviceApi;
-
-	/***
-	 * A ParameterMap that customizes the 3scale service calls.
-	 */
+	
+	@UriParam
 	private ParameterMap parameterMap;
 
 	/***
@@ -76,76 +61,179 @@ public class ThreeScaleConfiguration {
 		this.parameterMap = new ParameterMap();
 	}
 
+	/***
+	 * Retrieves the 3scale admin portal address
+	 * 
+	 * @return The 3scale admin portal address
+	 */
 	public String getServerHost() {
 		return serverHost;
 	}
 
+	/***
+	 * Set the 3scale admin portal address.
+	 * 
+	 * @param serverHost
+	 */
 	public void setServerHost(String serverHost) {
 		this.serverHost = serverHost;
 	}
 
+	/***
+	 * Retrieves the 3scale admin portal port
+	 * 
+	 * @return The 3scale admin portal port
+	 */
 	public int getServerPort() {
 		return serverPort;
 	}
 
+	/***
+	 * Set the 3scale admin portal port
+	 * 
+	 * @param serverPort
+	 */
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
 	}
 
+	/***
+	 * Retrieves the 3scale Service Identifier
+	 * 
+	 * @return The 3scale Service Identifier
+	 */
 	public String getServiceId() {
 		return serviceId;
 	}
 
+	/***
+	 * Set the 3scale Service Identifier
+	 * 
+	 * @param serviceId
+	 */
 	public void setServiceId(String serviceId) {
 		this.serviceId = serviceId;
 	}
 
+	/***
+	 * Retrieves the 3scale Service Token
+	 * 
+	 * @return The 3scale Service Token
+	 */
 	public String getServiceToken() {
 		return serviceToken;
 	}
 
+	/***
+	 * Set the 3scale Service Token
+	 * 
+	 * @param serviceToken
+	 */
 	public void setServiceToken(String serviceToken) {
 		this.serviceToken = serviceToken;
 	}
 
+	/***
+	 * Retrieves the API Key
+	 * 
+	 * @return The API Key
+	 */
 	public String getApiKey() {
 		return apiKey;
 	}
 
+	/*** 
+	 * Set the 3scale API Key.
+	 * 
+	 * @param apiKey
+	 */
 	public void setApiKey(String apiKey) {
 		this.apiKey = apiKey;
 	}
 
+	/***
+	 * Retrieves the Application Key
+	 * 
+	 * @return The Application Key
+	 */
 	public String getAppKey() {
 		return appKey;
 	}
 
+	/***
+	 * Set the Application Key. It is paired with the AppId for Authentication.
+	 * 
+	 * @param appKey
+	 */
 	public void setAppKey(String appKey) {
 		this.appKey = appKey;
 	}
 
+	/***
+	 * Retrieves the Application Identifier
+	 * 
+	 * @return The Application Identifier
+	 */
 	public String getAppId() {
 		return appId;
 	}
 
+	/***
+	 * Set the Application Identifier. It is paired with the AppKey for Authentication.
+	 * 
+	 * @param The Application Identifier
+	 */
 	public void setAppId(String appId) {
 		this.appId = appId;
 	}
 
+	/***
+	 * Retrieve the Service API
+	 * 
+	 * @return The Service API
+	 */
 	public ServiceApi getServiceApi() {
 		return serviceApi;
 	}
 
+	/***
+	 * Set the Service API
+	 * 
+	 * @param serviceApi
+	 */
 	public void setServiceApi(ServiceApi serviceApi) {
 		this.serviceApi = serviceApi;
 	}
 
+	/***
+	 * Retrieves the Parameter Map. 
+	 * 
+	 * @return
+	 */
+	public ParameterMap getParameterMap() {
+		return parameterMap;
+	}
+	
+	/***
+	 * Set the Parameter Map
+	 * 
+	 * @param parameterMap
+	 */
 	public void setParameterMap(ParameterMap parameterMap) {
 		this.parameterMap = parameterMap;
 	}
 
-	public ParameterMap getParameterMap() {
-		return parameterMap;
+	/***
+	 * Makes a copy of the ThreeScaleConfiguration and returns it.
+	 * 
+	 * @return
+	 */
+	public ThreeScaleConfiguration copy() {
+		try {
+			return (ThreeScaleConfiguration) clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeCamelException(e);
+		}
 	}
 
 }

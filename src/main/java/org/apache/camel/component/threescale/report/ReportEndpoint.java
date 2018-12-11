@@ -26,12 +26,16 @@ import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import threescale.v3.api.ServiceApi;
 import threescale.v3.api.impl.ServiceApiDriver;
 
-@UriEndpoint(scheme = "threescale-report", title = "3scale Report Service", syntax = "threescale-report:threescaleName", producerOnly = true, label = "report")
+@UriEndpoint(firstVersion = "2.22.0", scheme = "threescale-report", title = "3scale Report Service", syntax = "threescale-report:threescaleName", producerOnly = true, label = "report")
 public class ReportEndpoint extends DefaultEndpoint {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ReportEndpoint.class);
 
 	private ServiceApi serviceApi;
 
@@ -40,18 +44,25 @@ public class ReportEndpoint extends DefaultEndpoint {
 	private String threeScaleName;
 
 	@UriParam(description = "3scale Configuration")
-	protected ThreeScaleConfiguration conf;
+	protected ThreeScaleConfiguration configuration;
 
 	public ReportEndpoint(String uri, Component component, ThreeScaleConfiguration configuration) {
 		super(uri, component);
-		this.conf = configuration;
+		this.configuration = configuration;
 	}
 
 	@Override
 	public void doStart() throws Exception {
-		System.out.println("Creating Report Client");
+		LOG.info("ReportEndpoint::doStart Creating Report Client");
 		super.doStart();
-		serviceApi = ServiceApiDriver.createApi(conf.getServerHost(), conf.getServerPort(), true);
+		
+		if (null == this.configuration.getServiceApi()) {
+			LOG.info("ReportEndpoint::doStart serviceApi is null");
+			serviceApi = ServiceApiDriver.createApi(configuration.getServerHost(), configuration.getServerPort(), true);
+		} else {
+			LOG.info("ReportEndpoint::doStart serviceApi is not null, grab from parameters");
+			serviceApi = this.configuration.getServiceApi();
+		}
 	}
 
 	@Override
@@ -73,7 +84,7 @@ public class ReportEndpoint extends DefaultEndpoint {
 	}
 
 	public ThreeScaleConfiguration getConfiguration() {
-		return conf;
+		return configuration;
 	}
 
 	public ServiceApi getServiceApi() {

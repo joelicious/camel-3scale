@@ -1,4 +1,3 @@
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -40,12 +39,26 @@ public class ThreeScaleAuthPolicy implements AuthorizationPolicy {
 	private ServiceApi serviceApi;
 	private CacheManager cacheManager = null;
 
-	public ThreeScaleAuthPolicy(String host, int port, CachingProvider cachingProvider) {
+	public ThreeScaleAuthPolicy(String host, int port, CachingProvider cachingProvider, ServiceApi serviceApi) {
+		LOG.info("ThreeScaleAuthPolicy::initializePolicy constructor with serviceApi");
+		this.serviceApi = serviceApi;
+		initializePolicy(host, port, cachingProvider);
+	}
 
-		this.serviceApi = ServiceApiDriver.createApi(host, port, true);
+	public ThreeScaleAuthPolicy(String host, int port, CachingProvider cachingProvider) {
+		LOG.info("ThreeScaleAuthPolicy::initializePolicy constructor, no serviceAPI");
+		initializePolicy(host, port, cachingProvider);
+	}
+
+	private void initializePolicy(String host, int port, CachingProvider cachingProvider) {
+
+		if (null == this.serviceApi) {
+			LOG.info("ThreeScaleAuthPolicy::initializePolicy ServiceAPI is null");
+			this.serviceApi = ServiceApiDriver.createApi(host, port, true);
+		}
 
 		if (cachingProvider != null) {
-			
+
 			this.cacheManager = cachingProvider.getCacheManager();
 
 			boolean cacheFound = false;
@@ -66,6 +79,7 @@ public class ThreeScaleAuthPolicy implements AuthorizationPolicy {
 				this.cacheManager.createCache("threeScaleCache", config);
 			}
 		}
+		
 	}
 
 	public void beforeWrap(RouteContext routeContext, ProcessorDefinition<?> definition) {
@@ -89,6 +103,5 @@ public class ThreeScaleAuthPolicy implements AuthorizationPolicy {
 	public CacheManager getCacheManager() {
 		return this.cacheManager;
 	}
-
 
 }

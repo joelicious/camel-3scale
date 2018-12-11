@@ -1,7 +1,4 @@
-package org.apache.camel.component.threescale.security;
-
-import java.util.HashMap;
-import java.util.Map;
+package org.apache.camel.component.threescale.security.it;
 
 import javax.cache.Cache;
 import javax.cache.Caching;
@@ -14,14 +11,15 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.threescale.ThreeScaleConstants;
+import org.apache.camel.component.threescale.security.ThreeScaleAuthRepPolicy;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ThreeScaleAuthTest extends CamelTestSupport {
+public class ThreeScaleAuthRepTestIT extends CamelTestSupport {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ThreeScaleAuthTest.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ThreeScaleAuthRepTestIT.class);
 
 	private static final String API_KEY = "0bcf317e88e71915442d10c37986f040";
 	private static final String SERVICE_ID = "2555417749097";
@@ -29,65 +27,49 @@ public class ThreeScaleAuthTest extends CamelTestSupport {
 
 	private CachingProvider cachingProvider;
 
+	@Override
+	protected void doPreSetup() throws Exception {
+		cachingProvider = Caching.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider");
+	}
+
 	@EndpointInject(uri = "mock:success")
 	protected MockEndpoint successEndpoint;
 
 	@EndpointInject(uri = "mock:authorizationException")
 	protected MockEndpoint failureEndpoint;
 
-	@Override
-	protected void doPreSetup() throws Exception {
-		cachingProvider = Caching.getCachingProvider("com.hazelcast.cache.HazelcastCachingProvider");
-	}
-
 	@Test
-	public void testThreeScaleAuthorizationCacheTest() throws Exception {
+	public void testThreeScaleAuthRepCacheTest() throws Exception {
+		
 		successEndpoint.expectedMessageCount(2);
 		failureEndpoint.expectedMessageCount(0);
 
 		template.send("direct:threeScaleCache", new TestProcessor());
 
-		Cache<String, String> cache = cachingProvider.getCacheManager().getCache("threeScaleCache", String.class,
-				String.class);
+		Cache<String, String> cache = cachingProvider.getCacheManager().getCache("threeScaleCache", String.class, String.class);
 		cache.put(API_KEY, "TRUE");
-
+		
 		template.send("direct:threeScaleCache", new TestProcessor());
+
 		successEndpoint.assertIsSatisfied();
 		failureEndpoint.assertIsSatisfied();
 	}
-
+	
 	@Test
-	public void testThreeScaleAuthorizationNoCacheTest() throws Exception {
+	public void testThreeScaleAuthRepNoCacheTest() throws Exception {
+		
 		successEndpoint.expectedMessageCount(2);
 		failureEndpoint.expectedMessageCount(0);
 
 		template.send("direct:threeScaleNoCache", new TestProcessor());
 
-		Cache<String, String> cache = cachingProvider.getCacheManager().getCache("threeScaleCache", String.class,
-				String.class);
+		Cache<String, String> cache = cachingProvider.getCacheManager().getCache("threeScaleCache", String.class, String.class);
 		cache.put(API_KEY, "TRUE");
-
+		
 		template.send("direct:threeScaleNoCache", new TestProcessor());
 
 		successEndpoint.assertIsSatisfied();
 		failureEndpoint.assertIsSatisfied();
-	}
-
-	@Test
-	public void testThreeScaleAuthorization() throws Exception {
-		
-		successEndpoint.expectedMessageCount(1);
-		failureEndpoint.expectedMessageCount(0);
-		
-		Map<String, Object> headerMap = new HashMap<String, Object>();
-		headerMap.put(ThreeScaleConstants.THREE_SCALE_SERVICE_ID, SERVICE_ID);
-		headerMap.put(ThreeScaleConstants.THREE_SCALE_SERVICE_TOKEN, SERVICE_TOKEN);
-		headerMap.put(ThreeScaleConstants.THREE_SCALE_API_KEY, API_KEY);
-		
-		template.sendBodyAndHeaders("direct:threeScaleCache", "Body", headerMap);
-		
-		successEndpoint.assertIsSatisfied();
-		failureEndpoint.assertIsSatisfied();	
 		
 	}
 
@@ -100,12 +82,12 @@ public class ThreeScaleAuthTest extends CamelTestSupport {
 
 					public void configure() {
 
-						final ThreeScaleAuthPolicy threeScalePolicy = new ThreeScaleAuthPolicy("su1.3scale.net", 443,
-								cachingProvider);
+						final ThreeScaleAuthRepPolicy threeScaleAuthRepPolicy = new ThreeScaleAuthRepPolicy(
+								"su1.3scale.net", 443, cachingProvider);
 
 						onException(CamelAuthorizationException.class).to("mock:authorizationException");
 
-						from("direct:threeScaleCache").policy(threeScalePolicy).log("log:incoming payload")
+						from("direct:threeScaleCache").policy(threeScaleAuthRepPolicy).log("log:incoming payload")
 								.to("mock:success");
 
 					}
@@ -114,12 +96,12 @@ public class ThreeScaleAuthTest extends CamelTestSupport {
 
 					public void configure() {
 
-						final ThreeScaleAuthPolicy threeScalePolicy = new ThreeScaleAuthPolicy("su1.3scale.net", 443,
-								null);
+						final ThreeScaleAuthRepPolicy threeScaleAuthRepPolicy = new ThreeScaleAuthRepPolicy(
+								"su1.3scale.net", 443, null);
 
 						onException(CamelAuthorizationException.class).to("mock:authorizationException");
 
-						from("direct:threeScaleNoCache").policy(threeScalePolicy).log("log:incoming payload")
+						from("direct:threeScaleNoCache").policy(threeScaleAuthRepPolicy).log("log:incoming payload")
 								.to("mock:success");
 
 					}

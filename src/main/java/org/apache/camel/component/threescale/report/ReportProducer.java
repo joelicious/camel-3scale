@@ -18,8 +18,6 @@ package org.apache.camel.component.threescale.report;
 
 import java.util.Set;
 
-import javax.cache.Cache;
-
 import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;

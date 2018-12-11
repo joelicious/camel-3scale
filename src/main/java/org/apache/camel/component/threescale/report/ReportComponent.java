@@ -21,20 +21,30 @@ import java.util.Map;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.component.threescale.ThreeScaleConfiguration;
-import org.apache.camel.impl.UriEndpointComponent;
+import org.apache.camel.impl.DefaultComponent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ReportComponent extends UriEndpointComponent {
+public class ReportComponent extends DefaultComponent {
+	private static final Logger LOG = LoggerFactory.getLogger(ReportComponent.class);
+
+	private ThreeScaleConfiguration configuration;
 
 	public ReportComponent() {
-		super(ReportEndpoint.class);
+		this(null);
 	}
 
 	public ReportComponent(CamelContext context) {
-		super(context, ReportEndpoint.class);
+		super(context);
+		
+		this.configuration = new ThreeScaleConfiguration();
+        registerExtension(new ReportComponentVerifierExtension());
+
 	}
 
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		ThreeScaleConfiguration configuration = new ThreeScaleConfiguration();
+		
+		ThreeScaleConfiguration configuration = getConfiguration().copy();
 		setProperties(configuration, parameters);
 
 		if (remaining == null || remaining.trim().length() == 0) {
@@ -42,5 +52,12 @@ public class ReportComponent extends UriEndpointComponent {
 		}
 
 		return new ReportEndpoint(uri, this, configuration);
+	}
+
+	/**
+	 * To use the shared 3scale configuration
+	 */
+	protected ThreeScaleConfiguration getConfiguration() {
+		return configuration;
 	}
 }
